@@ -135,6 +135,10 @@ print('resulting features:')
 print(result)
 ```
 
+    /anaconda3/lib/python3.7/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+
+
     Add  LSTAT                          with p-value 9.27989e-122
     Add  RM                             with p-value 1.98621e-16
     Add  PTRATIO                        with p-value 2.5977e-12
@@ -146,8 +150,6 @@ print(result)
     resulting features:
     ['LSTAT', 'RM', 'PTRATIO', 'DIS', 'B', 'TAX_(0, 270]', 'CHAS', 'INDUS']
 
-
-### Build the final model again in Statsmodels
 
 
 ```python
@@ -173,10 +175,10 @@ model.summary()
   <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   215.7</td> 
 </tr>
 <tr>
-  <th>Date:</th>             <td>Thu, 20 Jun 2019</td> <th>  Prob (F-statistic):</th> <td>2.69e-156</td>
+  <th>Date:</th>             <td>Tue, 30 Jul 2019</td> <th>  Prob (F-statistic):</th> <td>2.69e-156</td>
 </tr>
 <tr>
-  <th>Time:</th>                 <td>16:17:21</td>     <th>  Log-Likelihood:    </th> <td> -1461.3</td> 
+  <th>Time:</th>                 <td>17:41:27</td>     <th>  Log-Likelihood:    </th> <td> -1461.3</td> 
 </tr>
 <tr>
   <th>No. Observations:</th>      <td>   506</td>      <th>  AIC:               </th> <td>   2941.</td> 
@@ -240,6 +242,8 @@ model.summary()
 
 
 
+### Build the final model again in Statsmodels
+
 Where our stepwise procedure mentions that "CHAS" was added with a p-value of 0.00151282, but our statsmodels output returns a p-value of 0.000. What is the intuition behind this?
 
 ## Use Feature ranking with recursive feature elimination
@@ -256,7 +260,7 @@ selector = RFE(linreg, n_features_to_select = 5)
 selector = selector.fit(X, y)
 ```
 
-    /Users/forest.polchow/anaconda3/lib/python3.6/site-packages/sklearn/utils/validation.py:761: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
+    /anaconda3/lib/python3.7/site-packages/sklearn/utils/validation.py:761: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
       y = column_or_1d(y, warn=True)
 
 
