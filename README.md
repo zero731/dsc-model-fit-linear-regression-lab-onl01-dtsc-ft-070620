@@ -65,7 +65,7 @@ boston_features["PTRATIO"] = (logptratio-np.mean(logptratio))/(np.sqrt(np.var(lo
 
 ## Perform stepwise selection
 
-The code for stepwise selection is copied below.
+The code for stepwise selection is copied below. Use this code provided on your preprocessed Boston Housing Data.
 
 
 ```python
@@ -124,59 +124,39 @@ def stepwise_selection(X, y,
 
 
 ```python
-
-```
-
-
-```python
-
-```
-
-
-```python
-
+# Your code here
 ```
 
 ### Build the final model again in Statsmodels
 
-Where our stepwise procedure mentions that "CHAS" was added with a p-value of 0.00151282, but our statsmodels output returns a p-value of 0.000. What is the intuition behind this?
-
 
 ```python
-
+# Your code here
 ```
+
+The stepwise procedure mentions that "CHAS" was added with a p-value of 0.00151282, but our statsmodels output returns a p-value of 0.000. Use some of the stepwise procedure logic to find the intuition behind this!
 
 ## Use Feature ranking with recursive feature elimination
-
-
-```python
-
-```
 
 Use feature ranking to select the 5 most important features
 
 
 ```python
-
-```
-
-
-```python
-
+# Your code here
 ```
 
 Fit the linear regression model again using the 5 columns selected
 
 
 ```python
-
+# Your code here
 ```
 
 Now, predict $\hat y$ using your model. you can use `.predict()` in scikit-learn
 
 
 ```python
-
+# Your code here
 ```
 
 Now, using the formulas of R-squared and adjusted-R-squared below, and your Python/numpy knowledge, compute them and contrast them with the R-squared and adjusted-R-squared in your statsmodels output using stepwise selection. Which of the two models would you prefer?
@@ -191,17 +171,10 @@ $R^2_{adj}= 1-(1-R^2)\dfrac{n-1}{n-p-1}$
 
 
 ```python
+# Your code here
 
-```
-
-
-```python
-
-```
-
-
-```python
-
+# r_squared is 0.742981  
+# adjusted_r_squared is 0.740411
 ```
 
 ## Level up - Optional
