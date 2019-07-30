@@ -63,6 +63,52 @@ boston_features["LSTAT"] = (loglstat-np.mean(loglstat))/np.sqrt(np.var(loglstat)
 boston_features["PTRATIO"] = (logptratio-np.mean(logptratio))/(np.sqrt(np.var(logptratio)))
 ```
 
+
+```python
+# __SOLUTION__ 
+import pandas as pd
+import numpy as np
+from sklearn.datasets import load_boston
+boston = load_boston()
+
+boston_features = pd.DataFrame(boston.data, columns = boston.feature_names)
+boston_features = boston_features.drop(["NOX","ZN"],axis=1)
+
+# first, create bins for based on the values observed. 3 values will result in 2 bins
+bins = [0,6,  24]
+bins_rad = pd.cut(boston_features['RAD'], bins)
+bins_rad = bins_rad.cat.as_unordered()
+
+# first, create bins for based on the values observed. 4 values will result in 3 bins
+bins = [0, 270, 360, 712]
+bins_tax = pd.cut(boston_features['TAX'], bins)
+bins_tax = bins_tax.cat.as_unordered()
+
+tax_dummy = pd.get_dummies(bins_tax, prefix="TAX")
+rad_dummy = pd.get_dummies(bins_rad, prefix="RAD")
+boston_features = boston_features.drop(["RAD","TAX"], axis=1)
+boston_features = pd.concat([boston_features, rad_dummy, tax_dummy], axis=1)
+
+age = boston_features["AGE"]
+b = boston_features["B"]
+logcrim = np.log(boston_features["CRIM"])
+logdis = np.log(boston_features["DIS"])
+logindus = np.log(boston_features["INDUS"])
+loglstat = np.log(boston_features["LSTAT"])
+logptratio = np.log(boston_features["PTRATIO"])
+
+# minmax scaling
+boston_features["B"] = (b-min(b))/(max(b)-min(b))
+boston_features["CRIM"] = (logcrim-min(logcrim))/(max(logcrim)-min(logcrim))
+boston_features["DIS"] = (logdis-min(logdis))/(max(logdis)-min(logdis))
+
+#standardization
+boston_features["AGE"] = (age-np.mean(age))/np.sqrt(np.var(age))
+boston_features["INDUS"] = (logindus-np.mean(logindus))/np.sqrt(np.var(logindus))
+boston_features["LSTAT"] = (loglstat-np.mean(loglstat))/np.sqrt(np.var(loglstat))
+boston_features["PTRATIO"] = (logptratio-np.mean(logptratio))/(np.sqrt(np.var(logptratio)))
+```
+
 ## Perform stepwise selection
 
 The code for stepwise selection is copied below.
@@ -124,69 +170,6 @@ def stepwise_selection(X, y,
 
 
 ```python
-
-```
-
-
-```python
-# __SOLUTION__ 
-import pandas as pd
-import numpy as np
-from sklearn.datasets import load_boston
-boston = load_boston()
-
-boston_features = pd.DataFrame(boston.data, columns = boston.feature_names)
-boston_features = boston_features.drop(["NOX","ZN"],axis=1)
-
-# first, create bins for based on the values observed. 3 values will result in 2 bins
-bins = [0,6,  24]
-bins_rad = pd.cut(boston_features['RAD'], bins)
-bins_rad = bins_rad.cat.as_unordered()
-
-# first, create bins for based on the values observed. 4 values will result in 3 bins
-bins = [0, 270, 360, 712]
-bins_tax = pd.cut(boston_features['TAX'], bins)
-bins_tax = bins_tax.cat.as_unordered()
-
-tax_dummy = pd.get_dummies(bins_tax, prefix="TAX")
-rad_dummy = pd.get_dummies(bins_rad, prefix="RAD")
-boston_features = boston_features.drop(["RAD","TAX"], axis=1)
-boston_features = pd.concat([boston_features, rad_dummy, tax_dummy], axis=1)
-
-age = boston_features["AGE"]
-b = boston_features["B"]
-logcrim = np.log(boston_features["CRIM"])
-logdis = np.log(boston_features["DIS"])
-logindus = np.log(boston_features["INDUS"])
-loglstat = np.log(boston_features["LSTAT"])
-logptratio = np.log(boston_features["PTRATIO"])
-
-# minmax scaling
-boston_features["B"] = (b-min(b))/(max(b)-min(b))
-boston_features["CRIM"] = (logcrim-min(logcrim))/(max(logcrim)-min(logcrim))
-boston_features["DIS"] = (logdis-min(logdis))/(max(logdis)-min(logdis))
-
-#standardization
-boston_features["AGE"] = (age-np.mean(age))/np.sqrt(np.var(age))
-boston_features["INDUS"] = (logindus-np.mean(logindus))/np.sqrt(np.var(logindus))
-boston_features["LSTAT"] = (loglstat-np.mean(loglstat))/np.sqrt(np.var(loglstat))
-boston_features["PTRATIO"] = (logptratio-np.mean(logptratio))/(np.sqrt(np.var(logptratio)))
-```
-
-
-```python
-
-```
-
-### Build the final model again in Statsmodels
-
-
-```python
-
-```
-
-
-```python
 # __SOLUTION__ 
 import statsmodels.api as sm
 
@@ -241,7 +224,10 @@ def stepwise_selection(X, y,
     return included
 ```
 
-Where our stepwise procedure mentions that "CHAS" was added with a p-value of 0.00151282, but our statsmodels output returns a p-value of 0.000. What is the intuition behind this?
+
+```python
+
+```
 
 
 ```python
@@ -250,7 +236,10 @@ X = boston_features
 y = pd.DataFrame(boston.target, columns= ["price"])
 ```
 
-## Use Feature ranking with recursive feature elimination
+
+```python
+
+```
 
 
 ```python
@@ -259,6 +248,10 @@ result = stepwise_selection(X, y, verbose = True)
 print('resulting features:')
 print(result)
 ```
+
+    /anaconda3/lib/python3.7/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+
 
     Add  LSTAT                          with p-value 9.27989e-122
     Add  RM                             with p-value 1.98621e-16
@@ -271,8 +264,6 @@ print(result)
     resulting features:
     ['LSTAT', 'RM', 'PTRATIO', 'DIS', 'B', 'TAX_(0, 270]', 'CHAS', 'INDUS']
 
-
-Use feature ranking to select the 5 most important features
 
 
 ```python
@@ -304,10 +295,10 @@ model.summary()
   <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   215.7</td> 
 </tr>
 <tr>
-  <th>Date:</th>             <td>Thu, 20 Jun 2019</td> <th>  Prob (F-statistic):</th> <td>2.69e-156</td>
+  <th>Date:</th>             <td>Tue, 30 Jul 2019</td> <th>  Prob (F-statistic):</th> <td>2.69e-156</td>
 </tr>
 <tr>
-  <th>Time:</th>                 <td>16:17:21</td>     <th>  Log-Likelihood:    </th> <td> -1461.3</td> 
+  <th>Time:</th>                 <td>17:41:27</td>     <th>  Log-Likelihood:    </th> <td> -1461.3</td> 
 </tr>
 <tr>
   <th>No. Observations:</th>      <td>   506</td>      <th>  AIC:               </th> <td>   2941.</td> 
@@ -371,19 +362,28 @@ model.summary()
 
 
 
+### Build the final model again in Statsmodels
 
-```python
-
-```
-
-Fit the linear regression model again using the 5 columns selected
+Where our stepwise procedure mentions that "CHAS" was added with a p-value of 0.00151282, but our statsmodels output returns a p-value of 0.000. What is the intuition behind this?
 
 
 ```python
 
 ```
 
-Now, predict $\hat y$ using your model. you can use `.predict()` in scikit-learn
+## Use Feature ranking with recursive feature elimination
+
+
+```python
+
+```
+
+Use feature ranking to select the 5 most important features
+
+
+```python
+
+```
 
 
 ```python
@@ -396,7 +396,7 @@ selector = RFE(linreg, n_features_to_select = 5)
 selector = selector.fit(X, y)
 ```
 
-    /Users/forest.polchow/anaconda3/lib/python3.6/site-packages/sklearn/utils/validation.py:761: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
+    /anaconda3/lib/python3.7/site-packages/sklearn/utils/validation.py:761: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
       y = column_or_1d(y, warn=True)
 
 
@@ -419,15 +419,12 @@ selector.support_
 
 
 
-Now, using the formulas of R-squared and adjusted-R-squared below, and your Python/numpy knowledge, compute them and contrast them with the R-squared and adjusted-R-squared in your statsmodels output using stepwise selection. Which of the two models would you prefer?
+Fit the linear regression model again using the 5 columns selected
 
-$SS_{residual} = \sum (y - \hat{y})^2 $
 
-$SS_{total} = \sum (y - \bar{y})^2 $
+```python
 
-$R^2 = 1- \dfrac{SS_{residual}}{SS_{total}}$
-
-$R^2_{adj}= 1-(1-R^2)\dfrac{n-1}{n-p-1}$
+```
 
 
 ```python
@@ -444,10 +441,7 @@ linreg.fit(X[selected_columns],y)
 
 
 
-
-```python
-
-```
+Now, predict $\hat y$ using your model. you can use `.predict()` in scikit-learn
 
 
 ```python
@@ -460,15 +454,20 @@ linreg.fit(X[selected_columns],y)
 yhat = linreg.predict(X[selected_columns])
 ```
 
+Now, using the formulas of R-squared and adjusted-R-squared below, and your Python/numpy knowledge, compute them and contrast them with the R-squared and adjusted-R-squared in your statsmodels output using stepwise selection. Which of the two models would you prefer?
+
+$SS_{residual} = \sum (y - \hat{y})^2 $
+
+$SS_{total} = \sum (y - \bar{y})^2 $
+
+$R^2 = 1- \dfrac{SS_{residual}}{SS_{total}}$
+
+$R^2_{adj}= 1-(1-R^2)\dfrac{n-1}{n-p-1}$
+
 
 ```python
 
 ```
-
-## Level up - Optional
-
-- Perform variable selection using forward selection, using this resource: https://planspace.org/20150423-forward_selection_with_statsmodels/. Note that this time features are added based on the adjusted-R-squared!
-- Tweak the code in the `stepwise_selection()`-function written above to just perform forward selection based on the p-value.
 
 
 ```python
@@ -479,8 +478,10 @@ r_squared = 1 - (float(SS_Residual))/SS_Total
 adjusted_r_squared = 1 - (1-r_squared)*(len(y)-1)/(len(y)-X[selected_columns].shape[1]-1)
 ```
 
-## Summary
-Great! You now performed your own feature selection methods!
+
+```python
+
+```
 
 
 ```python
@@ -498,6 +499,11 @@ r_squared
 
 
 ```python
+
+```
+
+
+```python
 # __SOLUTION__ 
 adjusted_r_squared
 ```
@@ -509,3 +515,11 @@ adjusted_r_squared
     dtype: float64
 
 
+
+## Level up - Optional
+
+- Perform variable selection using forward selection, using this resource: https://planspace.org/20150423-forward_selection_with_statsmodels/. Note that this time features are added based on the adjusted-R-squared!
+- Tweak the code in the `stepwise_selection()`-function written above to just perform forward selection based on the p-value.
+
+## Summary
+Great! You now performed your own feature selection methods!
