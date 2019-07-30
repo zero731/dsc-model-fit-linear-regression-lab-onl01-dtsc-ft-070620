@@ -122,17 +122,62 @@ def stepwise_selection(X, y,
     return included
 ```
 
+
+```python
+
+```
+
+
+```python
+
+```
+
+
+```python
+
+```
+
 ### Build the final model again in Statsmodels
 
 Where our stepwise procedure mentions that "CHAS" was added with a p-value of 0.00151282, but our statsmodels output returns a p-value of 0.000. What is the intuition behind this?
 
+
+```python
+
+```
+
 ## Use Feature ranking with recursive feature elimination
+
+
+```python
+
+```
 
 Use feature ranking to select the 5 most important features
 
+
+```python
+
+```
+
+
+```python
+
+```
+
 Fit the linear regression model again using the 5 columns selected
 
+
+```python
+
+```
+
 Now, predict $\hat y$ using your model. you can use `.predict()` in scikit-learn
+
+
+```python
+
+```
 
 Now, using the formulas of R-squared and adjusted-R-squared below, and your Python/numpy knowledge, compute them and contrast them with the R-squared and adjusted-R-squared in your statsmodels output using stepwise selection. Which of the two models would you prefer?
 
@@ -143,6 +188,21 @@ $SS_{total} = \sum (y - \bar{y})^2 $
 $R^2 = 1- \dfrac{SS_{residual}}{SS_{total}}$
 
 $R^2_{adj}= 1-(1-R^2)\dfrac{n-1}{n-p-1}$
+
+
+```python
+
+```
+
+
+```python
+
+```
+
+
+```python
+
+```
 
 ## Level up - Optional
 
