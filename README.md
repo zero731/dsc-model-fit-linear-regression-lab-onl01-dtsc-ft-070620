@@ -65,7 +65,7 @@ boston_features["PTRATIO"] = (logptratio-np.mean(logptratio))/(np.sqrt(np.var(lo
 
 ## Perform stepwise selection
 
-The code for stepwise selection is copied below.
+The code for stepwise selection is copied below. Use this code provided on your preprocessed Boston Housing Data.
 
 
 ```python
@@ -126,16 +126,21 @@ def stepwise_selection(X, y,
 ```python
 X = boston_features
 y = pd.DataFrame(boston.target, columns= ["price"])
-```
 
-
-```python
 result = stepwise_selection(X, y, verbose = True)
 print('resulting features:')
 print(result)
 ```
 
-    /anaconda3/lib/python3.7/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
       return ptp(axis=axis, out=out, **kwargs)
 
 
@@ -151,6 +156,8 @@ print(result)
     ['LSTAT', 'RM', 'PTRATIO', 'DIS', 'B', 'TAX_(0, 270]', 'CHAS', 'INDUS']
 
 
+### Build the final model again in Statsmodels
+
 
 ```python
 import statsmodels.api as sm
@@ -159,6 +166,10 @@ X_with_intercept = sm.add_constant(X_fin)
 model = sm.OLS(y,X_with_intercept).fit()
 model.summary()
 ```
+
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+
 
 
 
@@ -178,7 +189,7 @@ model.summary()
   <th>Date:</th>             <td>Tue, 30 Jul 2019</td> <th>  Prob (F-statistic):</th> <td>2.69e-156</td>
 </tr>
 <tr>
-  <th>Time:</th>                 <td>17:41:27</td>     <th>  Log-Likelihood:    </th> <td> -1461.3</td> 
+  <th>Time:</th>                 <td>19:40:41</td>     <th>  Log-Likelihood:    </th> <td> -1461.3</td> 
 </tr>
 <tr>
   <th>No. Observations:</th>      <td>   506</td>      <th>  AIC:               </th> <td>   2941.</td> 
@@ -242,9 +253,7 @@ model.summary()
 
 
 
-### Build the final model again in Statsmodels
-
-Where our stepwise procedure mentions that "CHAS" was added with a p-value of 0.00151282, but our statsmodels output returns a p-value of 0.000. What is the intuition behind this?
+The stepwise procedure mentions that "CHAS" was added with a p-value of 0.00151282, but our statsmodels output returns a p-value of 0.000. Use some of the stepwise procedure logic to find the intuition behind this!
 
 ## Use Feature ranking with recursive feature elimination
 
@@ -258,16 +267,12 @@ from sklearn.linear_model import LinearRegression
 linreg = LinearRegression()
 selector = RFE(linreg, n_features_to_select = 5)
 selector = selector.fit(X, y)
-```
-
-    /anaconda3/lib/python3.7/site-packages/sklearn/utils/validation.py:761: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
-      y = column_or_1d(y, warn=True)
-
-
-
-```python
 selector.support_ 
 ```
+
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/sklearn/utils/validation.py:578: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
+      y = column_or_1d(y, warn=True)
+
 
 
 
@@ -288,8 +293,7 @@ linreg.fit(X[selected_columns],y)
 
 
 
-    LinearRegression(copy_X=True, fit_intercept=True, n_jobs=None,
-             normalize=False)
+    LinearRegression(copy_X=True, fit_intercept=True, n_jobs=1, normalize=False)
 
 
 
