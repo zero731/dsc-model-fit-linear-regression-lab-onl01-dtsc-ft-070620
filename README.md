@@ -15,6 +15,7 @@ We pre-processed the Boston Housing Data the same way we did before:
 
 - We dropped "ZN" and "NOX" completely
 - We categorized "RAD" in 3 bins and "TAX" in 4 bins
+- We transformed "RAD" and "TAX" to dummy variables and dropped the first variable
 - We used min-max-scaling on "B", "CRIM" and "DIS" (and logtransformed all of them first, except "B")
 - We used standardization on "AGE", "INDUS", "LSTAT" and "PTRATIO" (and logtransformed all of them first, except for "AGE") 
 
@@ -38,8 +39,8 @@ bins = [0, 270, 360, 712]
 bins_tax = pd.cut(boston_features['TAX'], bins)
 bins_tax = bins_tax.cat.as_unordered()
 
-tax_dummy = pd.get_dummies(bins_tax, prefix="TAX")
-rad_dummy = pd.get_dummies(bins_rad, prefix="RAD")
+tax_dummy = pd.get_dummies(bins_tax, prefix="TAX", drop_first=True)
+rad_dummy = pd.get_dummies(bins_rad, prefix="RAD", drop_first=True)
 boston_features = boston_features.drop(["RAD","TAX"], axis=1)
 boston_features = pd.concat([boston_features, rad_dummy, tax_dummy], axis=1)
 
@@ -84,8 +85,8 @@ bins = [0, 270, 360, 712]
 bins_tax = pd.cut(boston_features['TAX'], bins)
 bins_tax = bins_tax.cat.as_unordered()
 
-tax_dummy = pd.get_dummies(bins_tax, prefix="TAX")
-rad_dummy = pd.get_dummies(bins_rad, prefix="RAD")
+tax_dummy = pd.get_dummies(bins_tax, prefix="TAX", drop_first=True)
+rad_dummy = pd.get_dummies(bins_rad, prefix="RAD", drop_first=True)
 boston_features = boston_features.drop(["RAD","TAX"], axis=1)
 boston_features = pd.concat([boston_features, rad_dummy, tax_dummy], axis=1)
 
@@ -240,28 +241,15 @@ print('resulting features:')
 print(result)
 ```
 
-    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
-      return ptp(axis=axis, out=out, **kwargs)
-    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
-      return ptp(axis=axis, out=out, **kwargs)
-    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
-      return ptp(axis=axis, out=out, **kwargs)
-    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
-      return ptp(axis=axis, out=out, **kwargs)
-    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
-      return ptp(axis=axis, out=out, **kwargs)
-
-
     Add  LSTAT                          with p-value 9.27989e-122
     Add  RM                             with p-value 1.98621e-16
     Add  PTRATIO                        with p-value 2.5977e-12
     Add  DIS                            with p-value 2.85496e-09
     Add  B                              with p-value 2.77572e-06
-    Add  TAX_(0, 270]                   with p-value 0.000855799
-    Add  CHAS                           with p-value 0.00151282
-    Add  INDUS                          with p-value 0.00588575
+    Add  INDUS                          with p-value 0.0017767
+    Add  CHAS                           with p-value 0.0004737
     resulting features:
-    ['LSTAT', 'RM', 'PTRATIO', 'DIS', 'B', 'TAX_(0, 270]', 'CHAS', 'INDUS']
+    ['LSTAT', 'RM', 'PTRATIO', 'DIS', 'B', 'INDUS', 'CHAS']
 
 
 ### Build the final model again in Statsmodels
@@ -275,15 +263,11 @@ print(result)
 ```python
 # __SOLUTION__ 
 import statsmodels.api as sm
-X_fin = X[["LSTAT", "RM", "PTRATIO", "DIS", "B", "TAX_(0, 270]", "CHAS", "INDUS"]]
+X_fin = X[["LSTAT", "RM", "PTRATIO", "DIS", "B", "INDUS", "CHAS"]]
 X_with_intercept = sm.add_constant(X_fin)
 model = sm.OLS(y,X_with_intercept).fit()
 model.summary()
 ```
-
-    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
-      return ptp(axis=axis, out=out, **kwargs)
-
 
 
 
@@ -291,28 +275,28 @@ model.summary()
 <table class="simpletable">
 <caption>OLS Regression Results</caption>
 <tr>
-  <th>Dep. Variable:</th>          <td>price</td>      <th>  R-squared:         </th> <td>   0.776</td> 
+  <th>Dep. Variable:</th>          <td>price</td>      <th>  R-squared:         </th> <td>   0.773</td> 
 </tr>
 <tr>
-  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.773</td> 
+  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.770</td> 
 </tr>
 <tr>
-  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   215.7</td> 
+  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   242.7</td> 
 </tr>
 <tr>
-  <th>Date:</th>             <td>Tue, 30 Jul 2019</td> <th>  Prob (F-statistic):</th> <td>2.69e-156</td>
+  <th>Date:</th>             <td>Wed, 21 Aug 2019</td> <th>  Prob (F-statistic):</th> <td>4.89e-156</td>
 </tr>
 <tr>
-  <th>Time:</th>                 <td>19:40:41</td>     <th>  Log-Likelihood:    </th> <td> -1461.3</td> 
+  <th>Time:</th>                 <td>13:36:15</td>     <th>  Log-Likelihood:    </th> <td> -1464.7</td> 
 </tr>
 <tr>
-  <th>No. Observations:</th>      <td>   506</td>      <th>  AIC:               </th> <td>   2941.</td> 
+  <th>No. Observations:</th>      <td>   506</td>      <th>  AIC:               </th> <td>   2945.</td> 
 </tr>
 <tr>
-  <th>Df Residuals:</th>          <td>   497</td>      <th>  BIC:               </th> <td>   2979.</td> 
+  <th>Df Residuals:</th>          <td>   498</td>      <th>  BIC:               </th> <td>   2979.</td> 
 </tr>
 <tr>
-  <th>Df Model:</th>              <td>     8</td>      <th>                     </th>     <td> </td>    
+  <th>Df Model:</th>              <td>     7</td>      <th>                     </th>     <td> </td>    
 </tr>
 <tr>
   <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>    
@@ -320,54 +304,51 @@ model.summary()
 </table>
 <table class="simpletable">
 <tr>
-        <td></td>          <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
+     <td></td>        <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>const</th>        <td>    4.8980</td> <td>    2.813</td> <td>    1.742</td> <td> 0.082</td> <td>   -0.628</td> <td>   10.424</td>
+  <th>const</th>   <td>    5.0123</td> <td>    2.829</td> <td>    1.772</td> <td> 0.077</td> <td>   -0.545</td> <td>   10.570</td>
 </tr>
 <tr>
-  <th>LSTAT</th>        <td>   -5.5932</td> <td>    0.319</td> <td>  -17.538</td> <td> 0.000</td> <td>   -6.220</td> <td>   -4.967</td>
+  <th>LSTAT</th>   <td>   -5.6444</td> <td>    0.320</td> <td>  -17.629</td> <td> 0.000</td> <td>   -6.274</td> <td>   -5.015</td>
 </tr>
 <tr>
-  <th>RM</th>           <td>    2.8294</td> <td>    0.386</td> <td>    7.333</td> <td> 0.000</td> <td>    2.071</td> <td>    3.587</td>
+  <th>RM</th>      <td>    2.8712</td> <td>    0.388</td> <td>    7.405</td> <td> 0.000</td> <td>    2.109</td> <td>    3.633</td>
 </tr>
 <tr>
-  <th>PTRATIO</th>      <td>   -1.3265</td> <td>    0.226</td> <td>   -5.878</td> <td> 0.000</td> <td>   -1.770</td> <td>   -0.883</td>
+  <th>PTRATIO</th> <td>   -1.3564</td> <td>    0.227</td> <td>   -5.983</td> <td> 0.000</td> <td>   -1.802</td> <td>   -0.911</td>
 </tr>
 <tr>
-  <th>DIS</th>          <td>   -9.1984</td> <td>    1.333</td> <td>   -6.898</td> <td> 0.000</td> <td>  -11.818</td> <td>   -6.579</td>
+  <th>DIS</th>     <td>   -9.7229</td> <td>    1.326</td> <td>   -7.333</td> <td> 0.000</td> <td>  -12.328</td> <td>   -7.118</td>
 </tr>
 <tr>
-  <th>B</th>            <td>    3.9052</td> <td>    0.931</td> <td>    4.195</td> <td> 0.000</td> <td>    2.076</td> <td>    5.734</td>
+  <th>B</th>       <td>    4.0619</td> <td>    0.934</td> <td>    4.347</td> <td> 0.000</td> <td>    2.226</td> <td>    5.898</td>
 </tr>
 <tr>
-  <th>TAX_(0, 270]</th> <td>    1.4418</td> <td>    0.552</td> <td>    2.614</td> <td> 0.009</td> <td>    0.358</td> <td>    2.526</td>
+  <th>INDUS</th>   <td>   -1.2099</td> <td>    0.334</td> <td>   -3.619</td> <td> 0.000</td> <td>   -1.867</td> <td>   -0.553</td>
 </tr>
 <tr>
-  <th>CHAS</th>         <td>    2.7988</td> <td>    0.791</td> <td>    3.539</td> <td> 0.000</td> <td>    1.245</td> <td>    4.353</td>
-</tr>
-<tr>
-  <th>INDUS</th>        <td>   -0.9574</td> <td>    0.346</td> <td>   -2.766</td> <td> 0.006</td> <td>   -1.637</td> <td>   -0.277</td>
+  <th>CHAS</th>    <td>    2.7988</td> <td>    0.795</td> <td>    3.519</td> <td> 0.000</td> <td>    1.236</td> <td>    4.362</td>
 </tr>
 </table>
 <table class="simpletable">
 <tr>
-  <th>Omnibus:</th>       <td>114.307</td> <th>  Durbin-Watson:     </th> <td>   1.088</td> 
+  <th>Omnibus:</th>       <td>105.185</td> <th>  Durbin-Watson:     </th> <td>   1.099</td>
 </tr>
 <tr>
-  <th>Prob(Omnibus):</th> <td> 0.000</td>  <th>  Jarque-Bera (JB):  </th> <td> 482.579</td> 
+  <th>Prob(Omnibus):</th> <td> 0.000</td>  <th>  Jarque-Bera (JB):  </th> <td> 423.621</td>
 </tr>
 <tr>
-  <th>Skew:</th>          <td> 0.945</td>  <th>  Prob(JB):          </th> <td>1.62e-105</td>
+  <th>Skew:</th>          <td> 0.878</td>  <th>  Prob(JB):          </th> <td>1.03e-92</td>
 </tr>
 <tr>
-  <th>Kurtosis:</th>      <td> 7.395</td>  <th>  Cond. No.          </th> <td>    96.8</td> 
+  <th>Kurtosis:</th>      <td> 7.124</td>  <th>  Cond. No.          </th> <td>    96.7</td>
 </tr>
 </table><br/><br/>Warnings:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
 
 
 
-The stepwise procedure mentions that "CHAS" was added with a p-value of 0.00151282, but our statsmodels output returns a p-value of 0.000. Use some of the stepwise procedure logic to find the intuition behind this!
+The stepwise procedure mentions that "INDUS" was added with a p-value of 0.0017767, but our statsmodels output returns a p-value of 0.000. Use some of the stepwise procedure logic to find the intuition behind this!
 
 ## Use Feature ranking with recursive feature elimination
 
@@ -386,19 +367,15 @@ from sklearn.linear_model import LinearRegression
 
 linreg = LinearRegression()
 selector = RFE(linreg, n_features_to_select = 5)
-selector = selector.fit(X, y)
+selector = selector.fit(X, y.values.ravel()) # convert y to 1d np array to prevent DataConversionWarning
 selector.support_ 
 ```
-
-    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/sklearn/utils/validation.py:578: DataConversionWarning: A column-vector y was passed when a 1d array was expected. Please change the shape of y to (n_samples, ), for example using ravel().
-      y = column_or_1d(y, warn=True)
-
 
 
 
 
     array([False, False,  True,  True, False,  True, False,  True,  True,
-           False, False, False, False, False])
+           False, False, False])
 
 
 
@@ -419,7 +396,7 @@ linreg.fit(X[selected_columns],y)
 
 
 
-    LinearRegression(copy_X=True, fit_intercept=True, n_jobs=1, normalize=False)
+    LinearRegression(copy_X=True, fit_intercept=True, n_jobs=None, normalize=False)
 
 
 
