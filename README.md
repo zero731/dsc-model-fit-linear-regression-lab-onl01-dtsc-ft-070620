@@ -15,6 +15,7 @@ We pre-processed the Boston Housing Data the same way we did before:
 
 - We dropped "ZN" and "NOX" completely
 - We categorized "RAD" in 3 bins and "TAX" in 4 bins
+- We transformed "RAD" and "TAX" to dummy variables and dropped the first variable
 - We used min-max-scaling on "B", "CRIM" and "DIS" (and logtransformed all of them first, except "B")
 - We used standardization on "AGE", "INDUS", "LSTAT" and "PTRATIO" (and logtransformed all of them first, except for "AGE") 
 
@@ -38,8 +39,8 @@ bins = [0, 270, 360, 712]
 bins_tax = pd.cut(boston_features['TAX'], bins)
 bins_tax = bins_tax.cat.as_unordered()
 
-tax_dummy = pd.get_dummies(bins_tax, prefix="TAX")
-rad_dummy = pd.get_dummies(bins_rad, prefix="RAD")
+tax_dummy = pd.get_dummies(bins_tax, prefix="TAX", drop_first=True)
+rad_dummy = pd.get_dummies(bins_rad, prefix="RAD", drop_first=True)
 boston_features = boston_features.drop(["RAD","TAX"], axis=1)
 boston_features = pd.concat([boston_features, rad_dummy, tax_dummy], axis=1)
 
@@ -134,7 +135,7 @@ def stepwise_selection(X, y,
 # Your code here
 ```
 
-The stepwise procedure mentions that "CHAS" was added with a p-value of 0.00151282, but our statsmodels output returns a p-value of 0.000. Use some of the stepwise procedure logic to find the intuition behind this!
+The stepwise procedure mentions that "INDUS" was added with a p-value of 0.0017767, but our statsmodels output returns a p-value of 0.000. Use some of the stepwise procedure logic to find the intuition behind this!
 
 ## Use Feature ranking with recursive feature elimination
 
