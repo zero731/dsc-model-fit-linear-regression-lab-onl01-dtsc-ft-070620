@@ -6,18 +6,18 @@ In this lab, you'll learn how to evaluate your model results, and you'll learn m
 
 ## Objectives
 You will be able to:
-* Analyze the results of regression and R-squared and adjusted-R-squared 
+* Analyze the results of regression and R-squared and adjusted R-squared 
 * Understand and apply forward and backward predictor selection
 
 ## The Boston Housing Data once more
 
-We pre-processed the Boston Housing Data the same way we did before:
+We pre-processed the Boston Housing data the same way we did before:
 
-- We dropped "ZN" and "NOX" completely
-- We categorized "RAD" in 3 bins and "TAX" in 4 bins
-- We transformed "RAD" and "TAX" to dummy variables and dropped the first variable
-- We used min-max-scaling on "B", "CRIM" and "DIS" (and logtransformed all of them first, except "B")
-- We used standardization on "AGE", "INDUS", "LSTAT" and "PTRATIO" (and logtransformed all of them first, except for "AGE") 
+- We dropped `'ZN'` and `'NOX'` completely
+- We categorized `'RAD'` in 3 bins and `'TAX'` in 4 bins
+- We transformed `'RAD'` and `'TAX'` to dummy variables and dropped the first variable
+- We used min-max-scaling on `'B'`, `'CRIM'`, and `'DIS'` (and logtransformed all of them first, except `'B'`)
+- We used standardization on `'AGE'`, `'INDUS'`, `'LSTAT'`, and `'PTRATIO'` (and logtransformed all of them first, except for `'AGE'`) 
 
 
 ```python
@@ -27,41 +27,41 @@ from sklearn.datasets import load_boston
 boston = load_boston()
 
 boston_features = pd.DataFrame(boston.data, columns = boston.feature_names)
-boston_features = boston_features.drop(["NOX","ZN"],axis=1)
+boston_features = boston_features.drop(['NOX', 'ZN'],axis=1)
 
-# first, create bins for based on the values observed. 3 values will result in 2 bins
+# First, create bins for based on the values observed. 3 values will result in 2 bins
 bins = [0,6,  24]
 bins_rad = pd.cut(boston_features['RAD'], bins)
 bins_rad = bins_rad.cat.as_unordered()
 
-# first, create bins for based on the values observed. 4 values will result in 3 bins
+# First, create bins for based on the values observed. 4 values will result in 3 bins
 bins = [0, 270, 360, 712]
 bins_tax = pd.cut(boston_features['TAX'], bins)
 bins_tax = bins_tax.cat.as_unordered()
 
-tax_dummy = pd.get_dummies(bins_tax, prefix="TAX", drop_first=True)
-rad_dummy = pd.get_dummies(bins_rad, prefix="RAD", drop_first=True)
-boston_features = boston_features.drop(["RAD","TAX"], axis=1)
+tax_dummy = pd.get_dummies(bins_tax, prefix='TAX', drop_first=True)
+rad_dummy = pd.get_dummies(bins_rad, prefix='RAD', drop_first=True)
+boston_features = boston_features.drop(['RAD', 'TAX'], axis=1)
 boston_features = pd.concat([boston_features, rad_dummy, tax_dummy], axis=1)
 
-age = boston_features["AGE"]
-b = boston_features["B"]
-logcrim = np.log(boston_features["CRIM"])
-logdis = np.log(boston_features["DIS"])
-logindus = np.log(boston_features["INDUS"])
-loglstat = np.log(boston_features["LSTAT"])
-logptratio = np.log(boston_features["PTRATIO"])
+age = boston_features['AGE']
+b = boston_features['B']
+logcrim = np.log(boston_features['CRIM'])
+logdis = np.log(boston_features['DIS'])
+logindus = np.log(boston_features['INDUS'])
+loglstat = np.log(boston_features['LSTAT'])
+logptratio = np.log(boston_features['PTRATIO'])
 
-# minmax scaling
-boston_features["B"] = (b-min(b))/(max(b)-min(b))
-boston_features["CRIM"] = (logcrim-min(logcrim))/(max(logcrim)-min(logcrim))
-boston_features["DIS"] = (logdis-min(logdis))/(max(logdis)-min(logdis))
+# Min-Max scaling
+boston_features['B'] = (b-min(b))/(max(b)-min(b))
+boston_features['CRIM'] = (logcrim-min(logcrim))/(max(logcrim)-min(logcrim))
+boston_features['DIS'] = (logdis-min(logdis))/(max(logdis)-min(logdis))
 
-#standardization
-boston_features["AGE"] = (age-np.mean(age))/np.sqrt(np.var(age))
-boston_features["INDUS"] = (logindus-np.mean(logindus))/np.sqrt(np.var(logindus))
-boston_features["LSTAT"] = (loglstat-np.mean(loglstat))/np.sqrt(np.var(loglstat))
-boston_features["PTRATIO"] = (logptratio-np.mean(logptratio))/(np.sqrt(np.var(logptratio)))
+# Standardization
+boston_features['AGE'] = (age-np.mean(age))/np.sqrt(np.var(age))
+boston_features['INDUS'] = (logindus-np.mean(logindus))/np.sqrt(np.var(logindus))
+boston_features['LSTAT'] = (loglstat-np.mean(loglstat))/np.sqrt(np.var(loglstat))
+boston_features['PTRATIO'] = (logptratio-np.mean(logptratio))/(np.sqrt(np.var(logptratio)))
 ```
 
 
@@ -73,7 +73,7 @@ from sklearn.datasets import load_boston
 boston = load_boston()
 
 boston_features = pd.DataFrame(boston.data, columns = boston.feature_names)
-boston_features = boston_features.drop(["NOX","ZN"],axis=1)
+boston_features = boston_features.drop(['NOX', 'ZN'],axis=1)
 
 # first, create bins for based on the values observed. 3 values will result in 2 bins
 bins = [0,6,  24]
@@ -85,34 +85,34 @@ bins = [0, 270, 360, 712]
 bins_tax = pd.cut(boston_features['TAX'], bins)
 bins_tax = bins_tax.cat.as_unordered()
 
-tax_dummy = pd.get_dummies(bins_tax, prefix="TAX", drop_first=True)
-rad_dummy = pd.get_dummies(bins_rad, prefix="RAD", drop_first=True)
-boston_features = boston_features.drop(["RAD","TAX"], axis=1)
+tax_dummy = pd.get_dummies(bins_tax, prefix='TAX', drop_first=True)
+rad_dummy = pd.get_dummies(bins_rad, prefix='RAD', drop_first=True)
+boston_features = boston_features.drop(['RAD', 'TAX'], axis=1)
 boston_features = pd.concat([boston_features, rad_dummy, tax_dummy], axis=1)
 
-age = boston_features["AGE"]
-b = boston_features["B"]
-logcrim = np.log(boston_features["CRIM"])
-logdis = np.log(boston_features["DIS"])
-logindus = np.log(boston_features["INDUS"])
-loglstat = np.log(boston_features["LSTAT"])
-logptratio = np.log(boston_features["PTRATIO"])
+age = boston_features['AGE']
+b = boston_features['B']
+logcrim = np.log(boston_features['CRIM'])
+logdis = np.log(boston_features['DIS'])
+logindus = np.log(boston_features['INDUS'])
+loglstat = np.log(boston_features['LSTAT'])
+logptratio = np.log(boston_features['PTRATIO'])
 
-# minmax scaling
-boston_features["B"] = (b-min(b))/(max(b)-min(b))
-boston_features["CRIM"] = (logcrim-min(logcrim))/(max(logcrim)-min(logcrim))
-boston_features["DIS"] = (logdis-min(logdis))/(max(logdis)-min(logdis))
+# Min-Max scaling
+boston_features['B'] = (b-min(b))/(max(b)-min(b))
+boston_features['CRIM'] = (logcrim-min(logcrim))/(max(logcrim)-min(logcrim))
+boston_features['DIS'] = (logdis-min(logdis))/(max(logdis)-min(logdis))
 
-#standardization
-boston_features["AGE"] = (age-np.mean(age))/np.sqrt(np.var(age))
-boston_features["INDUS"] = (logindus-np.mean(logindus))/np.sqrt(np.var(logindus))
-boston_features["LSTAT"] = (loglstat-np.mean(loglstat))/np.sqrt(np.var(loglstat))
-boston_features["PTRATIO"] = (logptratio-np.mean(logptratio))/(np.sqrt(np.var(logptratio)))
+# Standardization
+boston_features['AGE'] = (age-np.mean(age))/np.sqrt(np.var(age))
+boston_features['INDUS'] = (logindus-np.mean(logindus))/np.sqrt(np.var(logindus))
+boston_features['LSTAT'] = (loglstat-np.mean(loglstat))/np.sqrt(np.var(loglstat))
+boston_features['PTRATIO'] = (logptratio-np.mean(logptratio))/(np.sqrt(np.var(logptratio)))
 ```
 
 ## Perform stepwise selection
 
-The code for stepwise selection is copied below. Use this code provided on your preprocessed Boston Housing Data.
+The function for stepwise selection is copied below. Use this function provided on your preprocessed Boston Housing data.
 
 
 ```python
@@ -234,7 +234,7 @@ def stepwise_selection(X, y,
 ```python
 # __SOLUTION__ 
 X = boston_features
-y = pd.DataFrame(boston.target, columns= ["price"])
+y = pd.DataFrame(boston.target, columns= ['price'])
 
 result = stepwise_selection(X, y, verbose = True)
 print('resulting features:')
@@ -263,7 +263,7 @@ print(result)
 ```python
 # __SOLUTION__ 
 import statsmodels.api as sm
-X_fin = X[["LSTAT", "RM", "PTRATIO", "DIS", "B", "INDUS", "CHAS"]]
+X_fin = X[['LSTAT', 'RM', 'PTRATIO', 'DIS', 'B', 'INDUS', 'CHAS']]
 X_with_intercept = sm.add_constant(X_fin)
 model = sm.OLS(y,X_with_intercept).fit()
 model.summary()
@@ -348,7 +348,7 @@ model.summary()
 
 
 
-The stepwise procedure mentions that "INDUS" was added with a p-value of 0.0017767, but our statsmodels output returns a p-value of 0.000. Use some of the stepwise procedure logic to find the intuition behind this!
+The stepwise procedure mentions that `'INDUS'` was added with a p-value of 0.0017767, but our statsmodels output returns a p-value of 0.000. Use some of the stepwise procedure logic to find the intuition behind this!
 
 ## Use Feature ranking with recursive feature elimination
 
@@ -379,7 +379,7 @@ selector.support_
 
 
 
-Fit the linear regression model again using the 5 columns selected
+Fit the linear regression model again using the 5 selected columns
 
 
 ```python
@@ -400,7 +400,7 @@ linreg.fit(X[selected_columns],y)
 
 
 
-Now, predict $\hat y$ using your model. you can use `.predict()` in scikit-learn
+Now, predict $\hat y$ using your model. You can use `.predict()` in scikit-learn. 
 
 
 ```python
@@ -413,7 +413,7 @@ Now, predict $\hat y$ using your model. you can use `.predict()` in scikit-learn
 yhat = linreg.predict(X[selected_columns])
 ```
 
-Now, using the formulas of R-squared and adjusted-R-squared below, and your Python/numpy knowledge, compute them and contrast them with the R-squared and adjusted-R-squared in your statsmodels output using stepwise selection. Which of the two models would you prefer?
+Now, using the formulas of R-squared and adjusted R-squared below, and your Python/numpy knowledge, compute them and contrast them with the R-squared and adjusted R-squared in your statsmodels output using stepwise selection. Which of the two models would you prefer?
 
 $SS_{residual} = \sum (y - \hat{y})^2 $
 
@@ -468,10 +468,10 @@ adjusted_r_squared
 
 
 
-## Level up - Optional
+## Level up (Optional)
 
-- Perform variable selection using forward selection, using this resource: https://planspace.org/20150423-forward_selection_with_statsmodels/. Note that this time features are added based on the adjusted-R-squared!
-- Tweak the code in the `stepwise_selection()`-function written above to just perform forward selection based on the p-value.
+- Perform variable selection using forward selection, using this resource: https://planspace.org/20150423-forward_selection_with_statsmodels/. Note that this time features are added based on the adjusted R-squared!
+- Tweak the code in the `stepwise_selection()` function written above to just perform forward selection based on the p-value 
 
 ## Summary
 Great! You now performed your own feature selection methods!
