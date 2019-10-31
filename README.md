@@ -2,12 +2,12 @@
 # Model Fit in Linear Regression - Lab
 
 ## Introduction
-In this lab, you'll learn how to evaluate your model results, and you'll learn methods to select the appropriate features using stepwise selection.
+In this lab, you'll learn how to evaluate your model results and you'll learn how to select the appropriate features using stepwise selection.
 
 ## Objectives
 You will be able to:
-* Analyze the results of regression and R-squared and adjusted R-squared 
-* Understand and apply forward and backward predictor selection
+* Use stepwise selection methods to determine the most important features for a model
+* Use recursive feature elimination to determine the most important features for a model
 
 ## The Boston Housing Data once more
 
@@ -474,4 +474,4 @@ adjusted_r_squared
 - Tweak the code in the `stepwise_selection()` function written above to just perform forward selection based on the p-value 
 
 ## Summary
-Great! You now performed your own feature selection methods!
+Great! You practiced your feature selection skills by applying stepwise selection and recursive feature elimination to the Boston Housing dataset! 
