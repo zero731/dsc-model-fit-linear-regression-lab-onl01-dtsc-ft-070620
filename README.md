@@ -9,59 +9,37 @@ You will be able to:
 * Use stepwise selection methods to determine the most important features for a model
 * Use recursive feature elimination to determine the most important features for a model
 
-## The Boston Housing Data once more
-
-We pre-processed the Boston Housing data the same way we did before:
-
-- We dropped `'ZN'` and `'NOX'` completely
-- We categorized `'RAD'` in 3 bins and `'TAX'` in 4 bins
-- We transformed `'RAD'` and `'TAX'` to dummy variables and dropped the first variable
-- We used min-max-scaling on `'B'`, `'CRIM'`, and `'DIS'` (and logtransformed all of them first, except `'B'`)
-- We used standardization on `'AGE'`, `'INDUS'`, `'LSTAT'`, and `'PTRATIO'` (and logtransformed all of them first, except for `'AGE'`) 
+## The Ames Housing Data once more
 
 
 ```python
 import pandas as pd
 import numpy as np
-from sklearn.datasets import load_boston
-boston = load_boston()
 
-boston_features = pd.DataFrame(boston.data, columns = boston.feature_names)
-boston_features = boston_features.drop(['NOX', 'ZN'],axis=1)
+ames = pd.read_csv('ames.csv')
 
-# First, create bins for based on the values observed. 3 values will result in 2 bins
-bins = [0,6,  24]
-bins_rad = pd.cut(boston_features['RAD'], bins)
-bins_rad = bins_rad.cat.as_unordered()
+continuous = ['LotArea', '1stFlrSF', 'GrLivArea', 'SalePrice']
+categoricals = ['BldgType', 'KitchenQual', 'SaleType', 'MSZoning', 'Street', 'Neighborhood']
 
-# First, create bins for based on the values observed. 4 values will result in 3 bins
-bins = [0, 270, 360, 712]
-bins_tax = pd.cut(boston_features['TAX'], bins)
-bins_tax = bins_tax.cat.as_unordered()
+ames_cont = ames[continuous]
 
-tax_dummy = pd.get_dummies(bins_tax, prefix='TAX', drop_first=True)
-rad_dummy = pd.get_dummies(bins_rad, prefix='RAD', drop_first=True)
-boston_features = boston_features.drop(['RAD', 'TAX'], axis=1)
-boston_features = pd.concat([boston_features, rad_dummy, tax_dummy], axis=1)
+# log features
+log_names = [f'{column}_log' for column in ames_cont.columns]
 
-age = boston_features['AGE']
-b = boston_features['B']
-logcrim = np.log(boston_features['CRIM'])
-logdis = np.log(boston_features['DIS'])
-logindus = np.log(boston_features['INDUS'])
-loglstat = np.log(boston_features['LSTAT'])
-logptratio = np.log(boston_features['PTRATIO'])
+ames_log = np.log(ames_cont)
+ames_log.columns = log_names
 
-# Min-Max scaling
-boston_features['B'] = (b-min(b))/(max(b)-min(b))
-boston_features['CRIM'] = (logcrim-min(logcrim))/(max(logcrim)-min(logcrim))
-boston_features['DIS'] = (logdis-min(logdis))/(max(logdis)-min(logdis))
+# normalize (subract mean and divide by std)
 
-# Standardization
-boston_features['AGE'] = (age-np.mean(age))/np.sqrt(np.var(age))
-boston_features['INDUS'] = (logindus-np.mean(logindus))/np.sqrt(np.var(logindus))
-boston_features['LSTAT'] = (loglstat-np.mean(loglstat))/np.sqrt(np.var(loglstat))
-boston_features['PTRATIO'] = (logptratio-np.mean(logptratio))/(np.sqrt(np.var(logptratio)))
+def normalize(feature):
+    return (feature - feature.mean()) / feature.std()
+
+ames_log_norm = ames_log.apply(normalize)
+
+# one hot encode categoricals
+ames_ohe = pd.get_dummies(ames[categoricals], prefix=categoricals, drop_first=True)
+
+preprocessed = pd.concat([ames_log_norm, ames_ohe], axis=1)
 ```
 
 
@@ -69,45 +47,31 @@ boston_features['PTRATIO'] = (logptratio-np.mean(logptratio))/(np.sqrt(np.var(lo
 # __SOLUTION__ 
 import pandas as pd
 import numpy as np
-from sklearn.datasets import load_boston
-boston = load_boston()
 
-boston_features = pd.DataFrame(boston.data, columns = boston.feature_names)
-boston_features = boston_features.drop(['NOX', 'ZN'],axis=1)
+ames = pd.read_csv('ames.csv')
 
-# first, create bins for based on the values observed. 3 values will result in 2 bins
-bins = [0,6,  24]
-bins_rad = pd.cut(boston_features['RAD'], bins)
-bins_rad = bins_rad.cat.as_unordered()
+continuous = ['LotArea', '1stFlrSF', 'GrLivArea', 'SalePrice']
+categoricals = ['BldgType', 'KitchenQual', 'SaleType', 'MSZoning', 'Street', 'Neighborhood']
 
-# first, create bins for based on the values observed. 4 values will result in 3 bins
-bins = [0, 270, 360, 712]
-bins_tax = pd.cut(boston_features['TAX'], bins)
-bins_tax = bins_tax.cat.as_unordered()
+ames_cont = ames[continuous]
 
-tax_dummy = pd.get_dummies(bins_tax, prefix='TAX', drop_first=True)
-rad_dummy = pd.get_dummies(bins_rad, prefix='RAD', drop_first=True)
-boston_features = boston_features.drop(['RAD', 'TAX'], axis=1)
-boston_features = pd.concat([boston_features, rad_dummy, tax_dummy], axis=1)
+# log features
+log_names = [f'{column}_log' for column in ames_cont.columns]
 
-age = boston_features['AGE']
-b = boston_features['B']
-logcrim = np.log(boston_features['CRIM'])
-logdis = np.log(boston_features['DIS'])
-logindus = np.log(boston_features['INDUS'])
-loglstat = np.log(boston_features['LSTAT'])
-logptratio = np.log(boston_features['PTRATIO'])
+ames_log = np.log(ames_cont)
+ames_log.columns = log_names
 
-# Min-Max scaling
-boston_features['B'] = (b-min(b))/(max(b)-min(b))
-boston_features['CRIM'] = (logcrim-min(logcrim))/(max(logcrim)-min(logcrim))
-boston_features['DIS'] = (logdis-min(logdis))/(max(logdis)-min(logdis))
+# normalize (subract mean and divide by std)
 
-# Standardization
-boston_features['AGE'] = (age-np.mean(age))/np.sqrt(np.var(age))
-boston_features['INDUS'] = (logindus-np.mean(logindus))/np.sqrt(np.var(logindus))
-boston_features['LSTAT'] = (loglstat-np.mean(loglstat))/np.sqrt(np.var(loglstat))
-boston_features['PTRATIO'] = (logptratio-np.mean(logptratio))/(np.sqrt(np.var(logptratio)))
+def normalize(feature):
+    return (feature - feature.mean()) / feature.std()
+
+ames_log_norm = ames_log.apply(normalize)
+
+# one hot encode categoricals
+ames_ohe = pd.get_dummies(ames[categoricals], prefix=categoricals, drop_first=True)
+
+preprocessed = pd.concat([ames_log_norm, ames_ohe], axis=1)
 ```
 
 ## Perform stepwise selection
@@ -233,23 +197,148 @@ def stepwise_selection(X, y,
 
 ```python
 # __SOLUTION__ 
-X = boston_features
-y = pd.DataFrame(boston.target, columns= ['price'])
+X = preprocessed.drop('SalePrice_log', axis=1)
+y = preprocessed['SalePrice_log']
 
 result = stepwise_selection(X, y, verbose = True)
 print('resulting features:')
 print(result)
 ```
 
-    Add  LSTAT                          with p-value 9.27989e-122
-    Add  RM                             with p-value 1.98621e-16
-    Add  PTRATIO                        with p-value 2.5977e-12
-    Add  DIS                            with p-value 2.85496e-09
-    Add  B                              with p-value 2.77572e-06
-    Add  INDUS                          with p-value 0.0017767
-    Add  CHAS                           with p-value 0.0004737
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+
+
+    Add  GrLivArea_log                  with p-value 1.59847e-243
+    Add  KitchenQual_TA                 with p-value 1.56401e-67
+    Add  1stFlrSF_log                   with p-value 7.00069e-48
+    Add  KitchenQual_Fa                 with p-value 1.70471e-37
+    Add  Neighborhood_OldTown           with p-value 3.20105e-23
+    Add  KitchenQual_Gd                 with p-value 4.12635e-21
+    Add  Neighborhood_Edwards           with p-value 9.05184e-17
+    Add  Neighborhood_IDOTRR            with p-value 1.10068e-18
+    Add  LotArea_log                    with p-value 1.71728e-13
+    Add  Neighborhood_NridgHt           with p-value 7.05633e-12
+    Add  BldgType_Duplex                with p-value 4.30647e-11
+    Add  Neighborhood_NAmes             with p-value 2.25803e-09
+    Add  Neighborhood_SWISU             with p-value 5.40743e-09
+    Add  Neighborhood_BrkSide           with p-value 8.79638e-10
+    Add  Neighborhood_Sawyer            with p-value 6.92011e-09
+    Add  Neighborhood_NoRidge           with p-value 5.87105e-08
+    Add  Neighborhood_Somerst           with p-value 3.00722e-08
+    Add  Neighborhood_StoneBr           with p-value 6.58621e-10
+    Add  Neighborhood_MeadowV           with p-value 2.26069e-05
+    Add  SaleType_New                   with p-value 0.000485363
+    Add  SaleType_WD                    with p-value 0.00253157
+    Add  Neighborhood_BrDale            with p-value 0.00374541
+    Add  MSZoning_RM                    with p-value 8.29694e-05
+    Add  MSZoning_RL                    with p-value 0.00170469
+    Add  MSZoning_FV                    with p-value 0.00114668
+    Add  MSZoning_RH                    with p-value 3.95797e-05
+    Add  Neighborhood_NWAmes            with p-value 0.00346099
+    Drop SaleType_WD                    with p-value 0.0554448
+
+
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/ipykernel_launcher.py:46: FutureWarning: 
+    The current behaviour of 'Series.argmax' is deprecated, use 'idxmax'
+    instead.
+    The behavior of 'argmax' will be corrected to return the positional
+    maximum in the future. For now, use 'series.values.argmax' or
+    'np.argmax(np.array(values))' to get the position of the maximum
+    row.
+
+
+    Add  Neighborhood_Mitchel           with p-value 0.00994666
+    Drop Neighborhood_Somerst           with p-value 0.0500753
+    Add  Neighborhood_SawyerW           with p-value 0.00427685
     resulting features:
-    ['LSTAT', 'RM', 'PTRATIO', 'DIS', 'B', 'INDUS', 'CHAS']
+    ['GrLivArea_log', 'KitchenQual_TA', '1stFlrSF_log', 'KitchenQual_Fa', 'Neighborhood_OldTown', 'KitchenQual_Gd', 'Neighborhood_Edwards', 'Neighborhood_IDOTRR', 'LotArea_log', 'Neighborhood_NridgHt', 'BldgType_Duplex', 'Neighborhood_NAmes', 'Neighborhood_SWISU', 'Neighborhood_BrkSide', 'Neighborhood_Sawyer', 'Neighborhood_NoRidge', 'Neighborhood_StoneBr', 'Neighborhood_MeadowV', 'SaleType_New', 'Neighborhood_BrDale', 'MSZoning_RM', 'MSZoning_RL', 'MSZoning_FV', 'MSZoning_RH', 'Neighborhood_NWAmes', 'Neighborhood_Mitchel', 'Neighborhood_SawyerW']
 
 
 ### Build the final model again in Statsmodels
@@ -263,11 +352,15 @@ print(result)
 ```python
 # __SOLUTION__ 
 import statsmodels.api as sm
-X_fin = X[['LSTAT', 'RM', 'PTRATIO', 'DIS', 'B', 'INDUS', 'CHAS']]
+X_fin = X[result]
 X_with_intercept = sm.add_constant(X_fin)
 model = sm.OLS(y,X_with_intercept).fit()
 model.summary()
 ```
+
+    /Users/lore.dirick/anaconda3/lib/python3.6/site-packages/numpy/core/fromnumeric.py:2389: FutureWarning: Method .ptp is deprecated and will be removed in a future version. Use numpy.ptp instead.
+      return ptp(axis=axis, out=out, **kwargs)
+
 
 
 
@@ -275,80 +368,138 @@ model.summary()
 <table class="simpletable">
 <caption>OLS Regression Results</caption>
 <tr>
-  <th>Dep. Variable:</th>          <td>price</td>      <th>  R-squared:         </th> <td>   0.773</td> 
+  <th>Dep. Variable:</th>      <td>SalePrice_log</td>  <th>  R-squared:         </th> <td>   0.835</td>
 </tr>
 <tr>
-  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.770</td> 
+  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.832</td>
 </tr>
 <tr>
-  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   242.7</td> 
+  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   269.0</td>
 </tr>
 <tr>
-  <th>Date:</th>             <td>Wed, 21 Aug 2019</td> <th>  Prob (F-statistic):</th> <td>4.89e-156</td>
+  <th>Date:</th>             <td>Thu, 16 Apr 2020</td> <th>  Prob (F-statistic):</th>  <td>  0.00</td> 
 </tr>
 <tr>
-  <th>Time:</th>                 <td>13:36:15</td>     <th>  Log-Likelihood:    </th> <td> -1464.7</td> 
+  <th>Time:</th>                 <td>13:16:34</td>     <th>  Log-Likelihood:    </th> <td> -754.40</td>
 </tr>
 <tr>
-  <th>No. Observations:</th>      <td>   506</td>      <th>  AIC:               </th> <td>   2945.</td> 
+  <th>No. Observations:</th>      <td>  1460</td>      <th>  AIC:               </th> <td>   1565.</td>
 </tr>
 <tr>
-  <th>Df Residuals:</th>          <td>   498</td>      <th>  BIC:               </th> <td>   2979.</td> 
+  <th>Df Residuals:</th>          <td>  1432</td>      <th>  BIC:               </th> <td>   1713.</td>
 </tr>
 <tr>
-  <th>Df Model:</th>              <td>     7</td>      <th>                     </th>     <td> </td>    
+  <th>Df Model:</th>              <td>    27</td>      <th>                     </th>     <td> </td>   
 </tr>
 <tr>
-  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>    
-</tr>
-</table>
-<table class="simpletable">
-<tr>
-     <td></td>        <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
-</tr>
-<tr>
-  <th>const</th>   <td>    5.0123</td> <td>    2.829</td> <td>    1.772</td> <td> 0.077</td> <td>   -0.545</td> <td>   10.570</td>
-</tr>
-<tr>
-  <th>LSTAT</th>   <td>   -5.6444</td> <td>    0.320</td> <td>  -17.629</td> <td> 0.000</td> <td>   -6.274</td> <td>   -5.015</td>
-</tr>
-<tr>
-  <th>RM</th>      <td>    2.8712</td> <td>    0.388</td> <td>    7.405</td> <td> 0.000</td> <td>    2.109</td> <td>    3.633</td>
-</tr>
-<tr>
-  <th>PTRATIO</th> <td>   -1.3564</td> <td>    0.227</td> <td>   -5.983</td> <td> 0.000</td> <td>   -1.802</td> <td>   -0.911</td>
-</tr>
-<tr>
-  <th>DIS</th>     <td>   -9.7229</td> <td>    1.326</td> <td>   -7.333</td> <td> 0.000</td> <td>  -12.328</td> <td>   -7.118</td>
-</tr>
-<tr>
-  <th>B</th>       <td>    4.0619</td> <td>    0.934</td> <td>    4.347</td> <td> 0.000</td> <td>    2.226</td> <td>    5.898</td>
-</tr>
-<tr>
-  <th>INDUS</th>   <td>   -1.2099</td> <td>    0.334</td> <td>   -3.619</td> <td> 0.000</td> <td>   -1.867</td> <td>   -0.553</td>
-</tr>
-<tr>
-  <th>CHAS</th>    <td>    2.7988</td> <td>    0.795</td> <td>    3.519</td> <td> 0.000</td> <td>    1.236</td> <td>    4.362</td>
+  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>   
 </tr>
 </table>
 <table class="simpletable">
 <tr>
-  <th>Omnibus:</th>       <td>105.185</td> <th>  Durbin-Watson:     </th> <td>   1.099</td>
+            <td></td>              <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  
 </tr>
 <tr>
-  <th>Prob(Omnibus):</th> <td> 0.000</td>  <th>  Jarque-Bera (JB):  </th> <td> 423.621</td>
+  <th>const</th>                <td>   -0.2174</td> <td>    0.164</td> <td>   -1.323</td> <td> 0.186</td> <td>   -0.540</td> <td>    0.105</td>
 </tr>
 <tr>
-  <th>Skew:</th>          <td> 0.878</td>  <th>  Prob(JB):          </th> <td>1.03e-92</td>
+  <th>GrLivArea_log</th>        <td>    0.3694</td> <td>    0.015</td> <td>   24.477</td> <td> 0.000</td> <td>    0.340</td> <td>    0.399</td>
 </tr>
 <tr>
-  <th>Kurtosis:</th>      <td> 7.124</td>  <th>  Cond. No.          </th> <td>    96.7</td>
+  <th>KitchenQual_TA</th>       <td>   -0.7020</td> <td>    0.055</td> <td>  -12.859</td> <td> 0.000</td> <td>   -0.809</td> <td>   -0.595</td>
+</tr>
+<tr>
+  <th>1stFlrSF_log</th>         <td>    0.1445</td> <td>    0.015</td> <td>    9.645</td> <td> 0.000</td> <td>    0.115</td> <td>    0.174</td>
+</tr>
+<tr>
+  <th>KitchenQual_Fa</th>       <td>   -1.0372</td> <td>    0.087</td> <td>  -11.864</td> <td> 0.000</td> <td>   -1.209</td> <td>   -0.866</td>
+</tr>
+<tr>
+  <th>Neighborhood_OldTown</th> <td>   -0.8625</td> <td>    0.063</td> <td>  -13.615</td> <td> 0.000</td> <td>   -0.987</td> <td>   -0.738</td>
+</tr>
+<tr>
+  <th>KitchenQual_Gd</th>       <td>   -0.4021</td> <td>    0.050</td> <td>   -8.046</td> <td> 0.000</td> <td>   -0.500</td> <td>   -0.304</td>
+</tr>
+<tr>
+  <th>Neighborhood_Edwards</th> <td>   -0.7019</td> <td>    0.048</td> <td>  -14.530</td> <td> 0.000</td> <td>   -0.797</td> <td>   -0.607</td>
+</tr>
+<tr>
+  <th>Neighborhood_IDOTRR</th>  <td>   -0.8583</td> <td>    0.097</td> <td>   -8.855</td> <td> 0.000</td> <td>   -1.048</td> <td>   -0.668</td>
+</tr>
+<tr>
+  <th>LotArea_log</th>          <td>    0.1096</td> <td>    0.015</td> <td>    7.387</td> <td> 0.000</td> <td>    0.081</td> <td>    0.139</td>
+</tr>
+<tr>
+  <th>Neighborhood_NridgHt</th> <td>    0.3854</td> <td>    0.057</td> <td>    6.809</td> <td> 0.000</td> <td>    0.274</td> <td>    0.496</td>
+</tr>
+<tr>
+  <th>BldgType_Duplex</th>      <td>   -0.4073</td> <td>    0.061</td> <td>   -6.678</td> <td> 0.000</td> <td>   -0.527</td> <td>   -0.288</td>
+</tr>
+<tr>
+  <th>Neighborhood_NAmes</th>   <td>   -0.3763</td> <td>    0.038</td> <td>   -9.981</td> <td> 0.000</td> <td>   -0.450</td> <td>   -0.302</td>
+</tr>
+<tr>
+  <th>Neighborhood_SWISU</th>   <td>   -0.6263</td> <td>    0.089</td> <td>   -7.020</td> <td> 0.000</td> <td>   -0.801</td> <td>   -0.451</td>
+</tr>
+<tr>
+  <th>Neighborhood_BrkSide</th> <td>   -0.5641</td> <td>    0.066</td> <td>   -8.493</td> <td> 0.000</td> <td>   -0.694</td> <td>   -0.434</td>
+</tr>
+<tr>
+  <th>Neighborhood_Sawyer</th>  <td>   -0.4026</td> <td>    0.055</td> <td>   -7.342</td> <td> 0.000</td> <td>   -0.510</td> <td>   -0.295</td>
+</tr>
+<tr>
+  <th>Neighborhood_NoRidge</th> <td>    0.4347</td> <td>    0.070</td> <td>    6.221</td> <td> 0.000</td> <td>    0.298</td> <td>    0.572</td>
+</tr>
+<tr>
+  <th>Neighborhood_StoneBr</th> <td>    0.4538</td> <td>    0.087</td> <td>    5.226</td> <td> 0.000</td> <td>    0.283</td> <td>    0.624</td>
+</tr>
+<tr>
+  <th>Neighborhood_MeadowV</th> <td>   -0.6622</td> <td>    0.118</td> <td>   -5.592</td> <td> 0.000</td> <td>   -0.895</td> <td>   -0.430</td>
+</tr>
+<tr>
+  <th>SaleType_New</th>         <td>    0.1483</td> <td>    0.044</td> <td>    3.388</td> <td> 0.001</td> <td>    0.062</td> <td>    0.234</td>
+</tr>
+<tr>
+  <th>Neighborhood_BrDale</th>  <td>   -0.4733</td> <td>    0.123</td> <td>   -3.839</td> <td> 0.000</td> <td>   -0.715</td> <td>   -0.231</td>
+</tr>
+<tr>
+  <th>MSZoning_RM</th>          <td>    1.0820</td> <td>    0.147</td> <td>    7.363</td> <td> 0.000</td> <td>    0.794</td> <td>    1.370</td>
+</tr>
+<tr>
+  <th>MSZoning_RL</th>          <td>    0.9916</td> <td>    0.156</td> <td>    6.356</td> <td> 0.000</td> <td>    0.686</td> <td>    1.298</td>
+</tr>
+<tr>
+  <th>MSZoning_FV</th>          <td>    1.2052</td> <td>    0.165</td> <td>    7.284</td> <td> 0.000</td> <td>    0.881</td> <td>    1.530</td>
+</tr>
+<tr>
+  <th>MSZoning_RH</th>          <td>    0.8503</td> <td>    0.189</td> <td>    4.490</td> <td> 0.000</td> <td>    0.479</td> <td>    1.222</td>
+</tr>
+<tr>
+  <th>Neighborhood_NWAmes</th>  <td>   -0.2055</td> <td>    0.054</td> <td>   -3.837</td> <td> 0.000</td> <td>   -0.311</td> <td>   -0.100</td>
+</tr>
+<tr>
+  <th>Neighborhood_Mitchel</th> <td>   -0.1943</td> <td>    0.065</td> <td>   -3.004</td> <td> 0.003</td> <td>   -0.321</td> <td>   -0.067</td>
+</tr>
+<tr>
+  <th>Neighborhood_SawyerW</th> <td>   -0.1666</td> <td>    0.058</td> <td>   -2.862</td> <td> 0.004</td> <td>   -0.281</td> <td>   -0.052</td>
+</tr>
+</table>
+<table class="simpletable">
+<tr>
+  <th>Omnibus:</th>       <td>295.535</td> <th>  Durbin-Watson:     </th> <td>   1.965</td> 
+</tr>
+<tr>
+  <th>Prob(Omnibus):</th> <td> 0.000</td>  <th>  Jarque-Bera (JB):  </th> <td>1270.571</td> 
+</tr>
+<tr>
+  <th>Skew:</th>          <td>-0.903</td>  <th>  Prob(JB):          </th> <td>1.26e-276</td>
+</tr>
+<tr>
+  <th>Kurtosis:</th>      <td> 7.198</td>  <th>  Cond. No.          </th> <td>    48.7</td> 
 </tr>
 </table><br/><br/>Warnings:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
 
 
-
-The stepwise procedure mentions that `'INDUS'` was added with a p-value of 0.0017767, but our statsmodels output returns a p-value of 0.000. Use some of the stepwise procedure logic to find the intuition behind this!
 
 ## Use Feature ranking with recursive feature elimination
 
@@ -374,8 +525,12 @@ selector.support_
 
 
 
-    array([False, False,  True,  True, False,  True, False,  True,  True,
-           False, False, False])
+    array([False, False, False, False, False, False, False, False, False,
+           False, False, False, False, False, False, False, False, False,
+            True,  True,  True,  True, False, False, False, False, False,
+           False, False, False, False, False, False, False, False, False,
+           False,  True, False, False, False, False, False, False, False,
+           False, False])
 
 
 
@@ -427,8 +582,8 @@ $R^2_{adj}= 1-(1-R^2)\dfrac{n-1}{n-p-1}$
 ```python
 # Your code here
 
-# r_squared is 0.742981  
-# adjusted_r_squared is 0.740411
+# r_squared is 0.239434  
+# adjusted_r_squared is 0.236818
 ```
 
 
@@ -449,8 +604,7 @@ r_squared
 
 
 
-    price    0.742981
-    dtype: float64
+    0.23943418177114217
 
 
 
@@ -463,8 +617,7 @@ adjusted_r_squared
 
 
 
-    price    0.740411
-    dtype: float64
+    0.2368187559863112
 
 
 
@@ -474,4 +627,4 @@ adjusted_r_squared
 - Tweak the code in the `stepwise_selection()` function written above to just perform forward selection based on the p-value 
 
 ## Summary
-Great! You practiced your feature selection skills by applying stepwise selection and recursive feature elimination to the Boston Housing dataset! 
+Great! You practiced your feature selection skills by applying stepwise selection and recursive feature elimination to the Ames Housing dataset! 
