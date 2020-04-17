@@ -9,59 +9,37 @@ You will be able to:
 * Use stepwise selection methods to determine the most important features for a model
 * Use recursive feature elimination to determine the most important features for a model
 
-## The Boston Housing Data once more
-
-We pre-processed the Boston Housing data the same way we did before:
-
-- We dropped `'ZN'` and `'NOX'` completely
-- We categorized `'RAD'` in 3 bins and `'TAX'` in 4 bins
-- We transformed `'RAD'` and `'TAX'` to dummy variables and dropped the first variable
-- We used min-max-scaling on `'B'`, `'CRIM'`, and `'DIS'` (and logtransformed all of them first, except `'B'`)
-- We used standardization on `'AGE'`, `'INDUS'`, `'LSTAT'`, and `'PTRATIO'` (and logtransformed all of them first, except for `'AGE'`) 
+## The Ames Housing Data once more
 
 
 ```python
 import pandas as pd
 import numpy as np
-from sklearn.datasets import load_boston
-boston = load_boston()
 
-boston_features = pd.DataFrame(boston.data, columns = boston.feature_names)
-boston_features = boston_features.drop(['NOX', 'ZN'],axis=1)
+ames = pd.read_csv('ames.csv')
 
-# First, create bins for based on the values observed. 3 values will result in 2 bins
-bins = [0,6,  24]
-bins_rad = pd.cut(boston_features['RAD'], bins)
-bins_rad = bins_rad.cat.as_unordered()
+continuous = ['LotArea', '1stFlrSF', 'GrLivArea', 'SalePrice']
+categoricals = ['BldgType', 'KitchenQual', 'SaleType', 'MSZoning', 'Street', 'Neighborhood']
 
-# First, create bins for based on the values observed. 4 values will result in 3 bins
-bins = [0, 270, 360, 712]
-bins_tax = pd.cut(boston_features['TAX'], bins)
-bins_tax = bins_tax.cat.as_unordered()
+ames_cont = ames[continuous]
 
-tax_dummy = pd.get_dummies(bins_tax, prefix='TAX', drop_first=True)
-rad_dummy = pd.get_dummies(bins_rad, prefix='RAD', drop_first=True)
-boston_features = boston_features.drop(['RAD', 'TAX'], axis=1)
-boston_features = pd.concat([boston_features, rad_dummy, tax_dummy], axis=1)
+# log features
+log_names = [f'{column}_log' for column in ames_cont.columns]
 
-age = boston_features['AGE']
-b = boston_features['B']
-logcrim = np.log(boston_features['CRIM'])
-logdis = np.log(boston_features['DIS'])
-logindus = np.log(boston_features['INDUS'])
-loglstat = np.log(boston_features['LSTAT'])
-logptratio = np.log(boston_features['PTRATIO'])
+ames_log = np.log(ames_cont)
+ames_log.columns = log_names
 
-# Min-Max scaling
-boston_features['B'] = (b-min(b))/(max(b)-min(b))
-boston_features['CRIM'] = (logcrim-min(logcrim))/(max(logcrim)-min(logcrim))
-boston_features['DIS'] = (logdis-min(logdis))/(max(logdis)-min(logdis))
+# normalize (subract mean and divide by std)
 
-# Standardization
-boston_features['AGE'] = (age-np.mean(age))/np.sqrt(np.var(age))
-boston_features['INDUS'] = (logindus-np.mean(logindus))/np.sqrt(np.var(logindus))
-boston_features['LSTAT'] = (loglstat-np.mean(loglstat))/np.sqrt(np.var(loglstat))
-boston_features['PTRATIO'] = (logptratio-np.mean(logptratio))/(np.sqrt(np.var(logptratio)))
+def normalize(feature):
+    return (feature - feature.mean()) / feature.std()
+
+ames_log_norm = ames_log.apply(normalize)
+
+# one hot encode categoricals
+ames_ohe = pd.get_dummies(ames[categoricals], prefix=categoricals, drop_first=True)
+
+preprocessed = pd.concat([ames_log_norm, ames_ohe], axis=1)
 ```
 
 ## Perform stepwise selection
@@ -135,8 +113,6 @@ def stepwise_selection(X, y,
 # Your code here
 ```
 
-The stepwise procedure mentions that `'INDUS'` was added with a p-value of 0.0017767, but our statsmodels output returns a p-value of 0.000. Use some of the stepwise procedure logic to find the intuition behind this!
-
 ## Use Feature ranking with recursive feature elimination
 
 Use feature ranking to select the 5 most important features
@@ -174,8 +150,8 @@ $R^2_{adj}= 1-(1-R^2)\dfrac{n-1}{n-p-1}$
 ```python
 # Your code here
 
-# r_squared is 0.742981  
-# adjusted_r_squared is 0.740411
+# r_squared is 0.239434  
+# adjusted_r_squared is 0.236818
 ```
 
 ## Level up (Optional)
@@ -184,4 +160,4 @@ $R^2_{adj}= 1-(1-R^2)\dfrac{n-1}{n-p-1}$
 - Tweak the code in the `stepwise_selection()` function written above to just perform forward selection based on the p-value 
 
 ## Summary
-Great! You practiced your feature selection skills by applying stepwise selection and recursive feature elimination to the Boston Housing dataset! 
+Great! You practiced your feature selection skills by applying stepwise selection and recursive feature elimination to the Ames Housing dataset! 
