@@ -76,7 +76,7 @@ preprocessed = pd.concat([ames_log_norm, ames_ohe], axis=1)
 
 ## Perform stepwise selection
 
-The function for stepwise selection is copied below. Use this function provided on your preprocessed Boston Housing data.
+The function for stepwise selection is copied below. Use this provided function on your preprocessed Ames Housing data.
 
 
 ```python
@@ -87,7 +87,8 @@ def stepwise_selection(X, y,
                        threshold_in=0.01, 
                        threshold_out = 0.05, 
                        verbose=True):
-    """ Perform a forward-backward feature selection 
+    """ 
+    Perform a forward-backward feature selection 
     based on p-value from statsmodels.api.OLS
     Arguments:
         X - pandas.DataFrame with candidate features
@@ -143,7 +144,8 @@ def stepwise_selection(X, y,
                        threshold_in=0.01, 
                        threshold_out = 0.05, 
                        verbose=True):
-    """ Perform a forward-backward feature selection 
+    """ 
+    Perform a forward-backward feature selection 
     based on p-value from statsmodels.api.OLS
     Arguments:
         X - pandas.DataFrame with candidate features
